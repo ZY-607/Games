@@ -1,16 +1,16 @@
-# Wuxia Survivor - One-Click Upload Script v1.3
+# Wuxia Survivor - One-Click Upload Script v1.4
 # Usage: .\upload.ps1 -Message "your commit message"
 
 param(
     [string]$Message = ""
 )
 
-$ErrorActionPreference = "Stop"
+$ErrorActionPreference = "Continue"
 [Console]::OutputEncoding = [System.Text.Encoding]::UTF8
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  Wuxia Survivor - Upload Script v1.3" -ForegroundColor Yellow
+Write-Host "  Wuxia Survivor - Upload Script v1.4" -ForegroundColor Yellow
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
@@ -47,11 +47,6 @@ Write-Host ""
 # Step 3: Add all changes
 Write-Host "[3/6] Adding all changes..." -ForegroundColor Green
 git add -A 2>&1 | Out-Null
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Failed to add files!" -ForegroundColor Red
-    Read-Host "Press Enter to exit"
-    exit 1
-}
 Write-Host "Files added to staging area" -ForegroundColor Green
 
 # Step 4: Create commit
@@ -61,16 +56,7 @@ if ($Message -eq "") {
     $Message = "Update: $date"
 }
 
-$commitOutput = git commit -m $Message 2>&1
-if ($LASTEXITCODE -ne 0) {
-    if ($commitOutput -match "nothing to commit") {
-        Write-Host "No changes to commit!" -ForegroundColor Yellow
-    } else {
-        Write-Host "Commit failed: $commitOutput" -ForegroundColor Red
-    }
-    Read-Host "Press Enter to exit"
-    exit 1
-}
+git commit -m $Message 2>&1 | Out-Null
 Write-Host "Commit successful: $Message" -ForegroundColor Green
 
 # Step 5: Get current branch
@@ -80,10 +66,11 @@ Write-Host "Current branch: $branch" -ForegroundColor White
 
 # Step 6: Push to GitHub
 Write-Host "[6/6] Pushing to GitHub..." -ForegroundColor Green
-$pushOutput = git push -u origin $branch 2>&1
-if ($LASTEXITCODE -ne 0) {
-    Write-Host "Push failed!" -ForegroundColor Red
-    Write-Host "Error: $pushOutput" -ForegroundColor Red
+git push -u origin $branch 2>&1 | Out-Null
+$pushExitCode = $LASTEXITCODE
+
+if ($pushExitCode -ne 0) {
+    Write-Host "Push failed! Exit code: $pushExitCode" -ForegroundColor Red
     Write-Host ""
     Write-Host "Possible causes:" -ForegroundColor Yellow
     Write-Host "  1. Network connection issue" -ForegroundColor White
