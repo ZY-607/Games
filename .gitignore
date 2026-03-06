@@ -1,0 +1,46 @@
+# 操作系统文件
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# 编辑器/IDE文件
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Node.js
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+*.so
+.env
+.venv
+venv/
+ENV/
+
+# 备份文件
+backup_*/
+*.bak
+*.backup
+
+# 临时文件
+*.tmp
+*.temp
+*.log
+
+# 压缩文件（可选）
+*.zip
+*.rar
+*.7z
+
+# Trae/Minimax配置（可选，如需上传则移除）
+# .trae/
+# .minimax/
