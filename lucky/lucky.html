@@ -1,0 +1,1102 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>手气王刮刮乐</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        :root {
+            --primary-red: #d92b2b;
+            --dark-red: #a81c1c;
+            --gold: #f9d749;
+            --light-gold: #fff8dc;
+        }
+
+        body {
+            font-family: "Microsoft Yahei", sans-serif;
+            background: #f0f0f0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            padding: 5px 10px 10px 10px;
+            padding-top: env(safe-area-inset-top, 5px);
+        }
+
+        .clear-data-btn {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 40px;
+            height: 40px;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            z-index: 1000;
+            opacity: 0;
+        }
+
+        .clear-data-btn:active {
+            opacity: 0.3;
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 350px;
+            height: 100%;
+            max-height: 600px;
+            background: linear-gradient(180deg, #d92b2b 0%, #a81c1c 100%);
+            border: 6px solid #f9d749;
+            border-radius: 10px;
+            padding: 10px 12px 8px 12px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            margin-top: 0;
+        }
+
+        .title-wrapper {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            margin-bottom: 2px;
+            flex-shrink: 0;
+        }
+
+        .title {
+            text-align: center;
+            color: #f9d749;
+            font-size: 24px;
+            font-weight: bold;
+            text-shadow: 2px 2px 3px rgba(0,0,0,0.5);
+            flex-shrink: 0;
+        }
+
+        .help-btn {
+            position: absolute;
+            right: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255,255,255,0.2);
+            border: 2px solid #f9d749;
+            color: #f9d749;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .help-btn:hover {
+            background: #f9d749;
+            color: #d92b2b;
+            transform: translateY(-50%) scale(1.1);
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #fff;
+            font-size: 12px;
+            margin-bottom: 6px;
+            flex-shrink: 0;
+        }
+
+        .balance-display {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            background: linear-gradient(180deg, rgba(139, 0, 0, 0.8) 0%, rgba(196, 30, 58, 0.6) 100%);
+            border-radius: 8px;
+            border: 2px solid #f9d749;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+            flex-shrink: 0;
+            margin-bottom: 6px;
+        }
+
+        .balance-label {
+            font-size: 11px;
+            color: #fff8dc;
+        }
+
+        .balance-amount {
+            font-size: 18px;
+            font-weight: 900;
+            color: #f9d749;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.8);
+            min-width: 30px;
+            text-align: center;
+        }
+
+        .balance-unit {
+            font-size: 11px;
+            color: #fff8dc;
+        }
+
+        .balance-divider {
+            color: #fff8dc;
+            font-size: 11px;
+            margin: 0 6px;
+        }
+
+        .grid-wrapper {
+            flex: 1;
+            overflow: hidden;
+            position: relative;
+            min-height: 0;
+        }
+
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(9, 1fr);
+            gap: 4px;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            padding: 2px;
+        }
+
+        .cell {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: #fff;
+            border-radius: 6px;
+            overflow: hidden;
+            box-shadow: inset 0 0 3px rgba(0, 0, 0, 0.1);
+        }
+
+        .cell-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            height: 100%;
+            padding: 2px;
+        }
+
+        .cell-char {
+            font-size: 16px;
+            font-weight: 900;
+            line-height: 1;
+        }
+
+        .cell-char.xi {
+            color: #d92b2b;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.2);
+        }
+
+        .cell-char.shuang-xi {
+            color: #a81c1c;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+            font-size: 14px;
+        }
+
+        .cell-prize {
+            font-size: 9px;
+            color: #B8860B;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .cell.empty .cell-char {
+            color: #CCC;
+            font-size: 12px;
+        }
+
+        .scratch-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 6px;
+            touch-action: none;
+            cursor: pointer;
+        }
+
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            padding: 4px 0 2px 0;
+            flex-shrink: 0;
+        }
+
+        .btn {
+            padding: 6px 16px;
+            font-size: 13px;
+            font-weight: 700;
+            border: none;
+            border-radius: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .btn-reset {
+            background: #f9d749;
+            color: #d92b2b;
+            box-shadow: 0 4px 10px rgba(249, 215, 73, 0.3);
+        }
+
+        .btn-reset:active {
+            transform: scale(0.95);
+        }
+
+        .btn-reset:disabled {
+            background: #ccc;
+            color: #999;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .instructions {
+            text-align: center;
+            font-size: 9px;
+            color: #fff8dc;
+            opacity: 0.6;
+            padding: 2px;
+            flex-shrink: 0;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+        }
+
+        .balance-amount.animating {
+            animation: pulse 0.5s ease;
+        }
+
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 24px;
+            max-width: 90%;
+            max-height: 80%;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f9d749;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            color: #d92b2b;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            color: #666;
+            cursor: pointer;
+            padding: 0;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: all 0.3s;
+        }
+
+        .close-btn:hover {
+            color: #d92b2b;
+            transform: rotate(90deg);
+        }
+
+        .rule-section {
+            margin-bottom: 20px;
+        }
+
+        .rule-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #d92b2b;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .rule-title::before {
+            content: '📌';
+            margin-right: 8px;
+        }
+
+        .rule-content {
+            font-size: 14px;
+            line-height: 1.8;
+            color: #333;
+            padding-left: 28px;
+        }
+
+        .prize-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .prize-table th,
+        .prize-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+
+        .prize-table th {
+            background: #f9d749;
+            color: #d92b2b;
+            font-weight: bold;
+        }
+
+        .prize-table tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+
+        .highlight {
+            color: #d92b2b;
+            font-weight: bold;
+        }
+
+        .emoji {
+            font-size: 20px;
+        }
+
+        .payment-modal {
+            text-align: center;
+            padding: 20px;
+        }
+
+        .payment-modal .modal-title {
+            font-size: 20px;
+            margin-bottom: 15px;
+        }
+
+        .payment-amount {
+            font-size: 32px;
+            font-weight: bold;
+            color: #d92b2b;
+            margin-bottom: 15px;
+        }
+
+        .payment-tip {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .payment-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn-confirm {
+            background: #d92b2b;
+            color: white;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-confirm:hover {
+            background: #a81c1c;
+        }
+
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #666;
+            padding: 10px 24px;
+            font-size: 14px;
+            font-weight: bold;
+            border: none;
+            border-radius: 20px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        .use-balance {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .use-balance:hover {
+            background: #45a049;
+        }
+    </style>
+</head>
+<body>
+    <button class="clear-data-btn" onclick="clearAllData()"></button>
+    <div class="game-container">
+        <div class="title-wrapper">
+            <div class="title" id="titleEl">手气王</div>
+            <button class="help-btn" onclick="showRules()">?</button>
+        </div>
+        <div class="subtitle">最高奖金会让你惊喜</div>
+
+        <div class="balance-display">
+            <span class="balance-label">余额</span>
+            <span class="balance-amount" id="balanceAmount">0</span>
+            <span class="balance-unit">元</span>
+            <span class="balance-divider">|</span>
+            <span class="balance-label">次数</span>
+            <span class="balance-amount" id="chancesAmount">0</span>
+            <span class="balance-unit">次</span>
+        </div>
+
+        <div class="grid-wrapper">
+            <div class="grid-container" id="gridContainer"></div>
+            <canvas class="scratch-canvas" id="scratchCanvas"></canvas>
+        </div>
+
+        <div class="instructions">用手指刮开银色区域，揭晓惊喜</div>
+
+        <div class="controls">
+            <button class="btn btn-reset" id="resetBtn">再来一次</button>
+        </div>
+    </div>
+
+    <!-- 玩法说明弹窗 -->
+    <div class="modal-overlay" id="rulesModal" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header">
+                <div class="modal-title">🎮 游戏玩法</div>
+                <button class="close-btn" onclick="closeRules()">&times;</button>
+            </div>
+            
+            <div class="rule-section">
+                <div class="rule-title">游戏规则</div>
+                <div class="rule-content">
+                    <p>• 每张彩票包含 <span class="highlight">45个</span> 刮刮乐格子</p>
+                    <p>• 用手指或鼠标刮开格子查看是否中奖</p>
+                    <p>• 所有格子都显示金额，但只有 <span class="highlight">"喜"</span> 或 <span class="highlight">"囍"</span> 才算中奖</p>
+                    <p>• <span class="highlight">"囍"</span> 字奖金翻倍！</p>
+                </div>
+            </div>
+
+            <div class="rule-section">
+                <div class="rule-title">游戏次数</div>
+                <div class="rule-content">
+                    <p>• 每人只有 <span class="highlight">5次</span> 游戏机会</p>
+                    <p>• 中奖金额自动存入余额</p>
+                    <p>• 每 <span class="highlight">10元</span> 余额可兑换 <span class="highlight">1次</span> 游戏机会</p>
+                    <p>• 余额不足10元时无法继续游戏</p>
+                </div>
+            </div>
+
+            <div class="rule-section">
+                <div class="rule-title">温馨提示</div>
+                <div class="rule-content">
+                    <p>• 本游戏为虚拟娱乐，奖金不可兑现</p>
+                    <p>• 中奖结果完全随机，祝您好运！</p>
+                    <p>• 长按标题可重置游戏数据</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 兑换次数弹窗 -->
+    <div class="modal-overlay" id="exchangeModal" onclick="closeExchangeModal(event)">
+        <div class="modal-content payment-modal" onclick="event.stopPropagation()">
+            <div class="modal-title">💰 兑换游戏次数</div>
+            <div class="payment-amount" id="exchangeDisplay">消耗10元 = 1次</div>
+            <div class="payment-tip" id="exchangeTip">当前余额充足，可兑换游戏次数</div>
+            <div class="payment-buttons">
+                <button class="btn-cancel" onclick="closeExchangeModal()">取消</button>
+                <button class="btn-confirm use-balance" id="exchangeBtn">兑换</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 次数不足弹窗 -->
+    <div class="modal-overlay" id="noChanceModal" onclick="closeNoChanceModal(event)">
+        <div class="modal-content payment-modal" onclick="event.stopPropagation()">
+            <div class="modal-title">😢 游戏次数不足</div>
+            <div class="payment-amount" id="noChanceDisplay">余额不足10元</div>
+            <div class="payment-tip">中奖金额每满10元可兑换1次游戏机会</div>
+            <div class="payment-buttons">
+                <button class="btn-confirm" onclick="closeNoChanceModal()">知道了</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 游戏结束弹窗 -->
+    <div class="modal-overlay" id="gameOverModal" onclick="closeGameOverModal(event)">
+        <div class="modal-content payment-modal" onclick="event.stopPropagation()">
+            <div class="modal-title">🎮 游戏结束</div>
+            <div class="payment-amount" id="finalBalanceDisplay">最终余额：0元</div>
+            <div class="payment-tip">感谢您的参与！</div>
+            <div class="payment-buttons">
+                <button class="btn-confirm" onclick="closeGameOverModal()">确定</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const CONFIG = {
+            gridCols: 5,
+            gridRows: 9,
+            totalCells: 45,
+            scratchRadius: 15,
+            revealThreshold: 0.5,
+            initialChances: 5,
+            exchangeRate: 10
+        };
+
+        const ODDS = {
+            NO_PRIZE: 867,
+            SMALL_PRIZE: 100,
+            NORMAL_PRIZE: 30,
+            BIG_PRIZE: 3
+        };
+        const TOTAL_ODDS = 1000;
+
+        const PRIZE_POOLS = {
+            SMALL: [2, 3, 5, 8],
+            NORMAL: [20, 22, 25, 30, 35],
+            BIG: [90, 100, 120]
+        };
+
+        let gameState = {
+            cells: [],
+            scratchedCells: new Set(),
+            isScratching: false,
+            revealed: false,
+            currentPrize: 0
+        };
+
+        let playerData = {
+            balance: 0,
+            chances: CONFIG.initialChances,
+            isNewPlayer: true
+        };
+
+        const gridContainer = document.getElementById('gridContainer');
+        const scratchCanvas = document.getElementById('scratchCanvas');
+        const ctx = scratchCanvas.getContext('2d');
+        const balanceEl = document.getElementById('balanceAmount');
+        const chancesEl = document.getElementById('chancesAmount');
+        const resetBtn = document.getElementById('resetBtn');
+
+        function loadPlayerData() {
+            const saved = localStorage.getItem('shouqiwang_player_data');
+            if (saved) {
+                try {
+                    playerData = JSON.parse(saved);
+                } catch (e) {
+                    playerData = { balance: 0, chances: 0, isNewPlayer: true };
+                }
+            }
+            if (playerData.isNewPlayer) {
+                playerData.balance = 0;
+                playerData.chances = CONFIG.initialChances;
+                playerData.isNewPlayer = false;
+                savePlayerData();
+            }
+            updateDisplay();
+        }
+
+        function savePlayerData() {
+            localStorage.setItem('shouqiwang_player_data', JSON.stringify(playerData));
+        }
+
+        function updateDisplay() {
+            balanceEl.textContent = playerData.balance;
+            chancesEl.textContent = playerData.chances;
+            resetBtn.disabled = playerData.chances <= 0;
+        }
+
+        function addBalance(amount) {
+            playerData.balance += amount;
+            savePlayerData();
+            updateDisplay();
+            balanceEl.classList.add('animating');
+            setTimeout(() => balanceEl.classList.remove('animating'), 500);
+        }
+
+        function useChance() {
+            if (playerData.chances > 0) {
+                playerData.chances--;
+                savePlayerData();
+                updateDisplay();
+                return true;
+            }
+            return false;
+        }
+
+        function determinePrizeType() {
+            const rand = Math.floor(Math.random() * TOTAL_ODDS) + 1;
+            if (rand <= ODDS.BIG_PRIZE) return 'BIG';
+            if (rand <= ODDS.BIG_PRIZE + ODDS.NORMAL_PRIZE) return 'NORMAL';
+            if (rand <= ODDS.BIG_PRIZE + ODDS.NORMAL_PRIZE + ODDS.SMALL_PRIZE) return 'SMALL';
+            return 'NO';
+        }
+
+        function generateRandomDisplayPrize() {
+            const prizes = [1, 2, 3, 5, 8, 10, 15, 20, 25, 30, 35, 40, 50, 60, 80, 100, 120, 150, 180, 200];
+            return prizes[Math.floor(Math.random() * prizes.length)];
+        }
+
+        function generateCells() {
+            gameState.cells = [];
+            gameState.scratchedCells.clear();
+            gameState.revealed = false;
+            gameState.currentPrize = 0;
+
+            const ticketResult = determinePrizeType();
+            let winningIndex = -1;
+            let prizeInfo = { type: 'empty', displayPrize: 0, actualPrize: 0 };
+
+            if (ticketResult !== 'NO') {
+                winningIndex = Math.floor(Math.random() * CONFIG.totalCells);
+                const pool = PRIZE_POOLS[ticketResult];
+                const basePrize = pool[Math.floor(Math.random() * pool.length)];
+                const isDoubleXi = Math.random() < 0.15;
+                
+                prizeInfo = {
+                    type: isDoubleXi ? 'shuang-xi' : 'xi',
+                    displayPrize: isDoubleXi ? basePrize * 2 : basePrize,
+                    actualPrize: isDoubleXi ? basePrize * 2 : basePrize
+                };
+            }
+
+            for (let i = 0; i < CONFIG.totalCells; i++) {
+                if (i === winningIndex) {
+                    gameState.cells.push({
+                        index: i,
+                        ...prizeInfo,
+                        scratched: false
+                    });
+                } else {
+                    const symbols = ['💰', '🏺', '😊', '🌸', '💎', '🐦', '🍀', '🪷', '🌈', '🔺'];
+                    gameState.cells.push({
+                        index: i,
+                        type: 'empty',
+                        symbol: symbols[Math.floor(Math.random() * symbols.length)],
+                        displayPrize: generateRandomDisplayPrize(),
+                        actualPrize: 0,
+                        scratched: false
+                    });
+                }
+            }
+        }
+
+        function renderGrid() {
+            gridContainer.innerHTML = '';
+            
+            gameState.cells.forEach((cell, index) => {
+                const cellEl = document.createElement('div');
+                cellEl.className = `cell ${cell.type}`;
+                cellEl.dataset.index = index;
+                
+                const contentEl = document.createElement('div');
+                contentEl.className = 'cell-content';
+                
+                const charEl = document.createElement('div');
+                charEl.className = `cell-char ${cell.type}`;
+                
+                if (cell.type === 'xi') {
+                    charEl.textContent = '喜';
+                } else if (cell.type === 'shuang-xi') {
+                    charEl.textContent = '囍';
+                } else {
+                    charEl.textContent = cell.symbol || '谢谢';
+                }
+                
+                const prizeEl = document.createElement('div');
+                prizeEl.className = 'cell-prize';
+                prizeEl.textContent = `${cell.displayPrize}元`;
+                
+                contentEl.appendChild(charEl);
+                contentEl.appendChild(prizeEl);
+                cellEl.appendChild(contentEl);
+                gridContainer.appendChild(cellEl);
+            });
+        }
+
+        function initCanvas() {
+            const rect = gridContainer.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            
+            scratchCanvas.width = rect.width * dpr;
+            scratchCanvas.height = rect.height * dpr;
+            scratchCanvas.style.width = rect.width + 'px';
+            scratchCanvas.style.height = rect.height + 'px';
+            
+            ctx.scale(dpr, dpr);
+            
+            drawScratchLayer(rect.width, rect.height);
+        }
+
+        function drawScratchLayer(width, height) {
+            ctx.fillStyle = '#b8b8b8';
+            ctx.fillRect(0, 0, width, height);
+            
+            const gradient = ctx.createLinearGradient(0, 0, width, height);
+            gradient.addColorStop(0, 'rgba(255, 255, 255, 0.3)');
+            gradient.addColorStop(0.5, 'rgba(255, 255, 255, 0)');
+            gradient.addColorStop(1, 'rgba(255, 255, 255, 0.2)');
+            
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, width, height);
+            
+            ctx.fillStyle = 'rgba(128, 128, 128, 0.1)';
+            for (let i = 0; i < 80; i++) {
+                const x = Math.random() * width;
+                const y = Math.random() * height;
+                const size = Math.random() * 2 + 1;
+                ctx.beginPath();
+                ctx.arc(x, y, size, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            ctx.fillStyle = '#888';
+            ctx.font = 'bold 10px "Microsoft YaHei", sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+            const cellWidth = width / CONFIG.gridCols;
+            const cellHeight = height / CONFIG.gridRows;
+            
+            for (let row = 0; row < CONFIG.gridRows; row++) {
+                for (let col = 0; col < CONFIG.gridCols; col++) {
+                    const x = col * cellWidth + cellWidth / 2;
+                    const y = row * cellHeight + cellHeight / 2;
+                    ctx.fillText('刮开有奖', x, y);
+                }
+            }
+        }
+
+        function getEventPos(e) {
+            const rect = scratchCanvas.getBoundingClientRect();
+            let clientX, clientY;
+            
+            if (e.touches && e.touches.length > 0) {
+                clientX = e.touches[0].clientX;
+                clientY = e.touches[0].clientY;
+            } else {
+                clientX = e.clientX;
+                clientY = e.clientY;
+            }
+            
+            return {
+                x: clientX - rect.left,
+                y: clientY - rect.top
+            };
+        }
+
+        function scratch(x, y) {
+            ctx.globalCompositeOperation = 'destination-out';
+            ctx.beginPath();
+            ctx.arc(x, y, CONFIG.scratchRadius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            checkCellReveal(x, y);
+        }
+
+        function checkCellReveal(x, y) {
+            const rect = scratchCanvas.getBoundingClientRect();
+            const cellWidth = rect.width / CONFIG.gridCols;
+            const cellHeight = rect.height / CONFIG.gridRows;
+            
+            const col = Math.floor(x / cellWidth);
+            const row = Math.floor(y / cellHeight);
+            const index = row * CONFIG.gridCols + col;
+            
+            if (index >= 0 && index < CONFIG.totalCells && !gameState.scratchedCells.has(index)) {
+                const cellRect = {
+                    x: col * cellWidth,
+                    y: row * cellHeight,
+                    width: cellWidth,
+                    height: cellHeight
+                };
+                
+                const scratchedArea = calculateScratchedArea(cellRect);
+                
+                if (scratchedArea >= CONFIG.revealThreshold) {
+                    revealCell(index);
+                }
+            }
+        }
+
+        function calculateScratchedArea(cellRect) {
+            const dpr = window.devicePixelRatio || 1;
+            const x = Math.floor(cellRect.x * dpr);
+            const y = Math.floor(cellRect.y * dpr);
+            const w = Math.floor(cellRect.width * dpr);
+            const h = Math.floor(cellRect.height * dpr);
+            
+            try {
+                const imageData = ctx.getImageData(x, y, w, h);
+                const data = imageData.data;
+                let transparentPixels = 0;
+                
+                for (let i = 3; i < data.length; i += 4) {
+                    if (data[i] < 128) {
+                        transparentPixels++;
+                    }
+                }
+                
+                return transparentPixels / (data.length / 4);
+            } catch (e) {
+                return 0;
+            }
+        }
+
+        function revealCell(index) {
+            if (gameState.scratchedCells.has(index)) return;
+            
+            gameState.scratchedCells.add(index);
+            const cell = gameState.cells[index];
+            cell.scratched = true;
+            
+            if (cell.actualPrize > 0) {
+                gameState.currentPrize += cell.actualPrize;
+                addBalance(cell.actualPrize);
+            }
+        }
+
+        function handleStart(e) {
+            e.preventDefault();
+            gameState.isScratching = true;
+            const pos = getEventPos(e);
+            scratch(pos.x, pos.y);
+        }
+
+        function handleMove(e) {
+            e.preventDefault();
+            if (!gameState.isScratching) return;
+            
+            const pos = getEventPos(e);
+            scratch(pos.x, pos.y);
+        }
+
+        function handleEnd(e) {
+            e.preventDefault();
+            gameState.isScratching = false;
+            checkAllCells();
+        }
+
+        function checkAllCells() {
+            const rect = scratchCanvas.getBoundingClientRect();
+            const cellWidth = rect.width / CONFIG.gridCols;
+            const cellHeight = rect.height / CONFIG.gridRows;
+            
+            for (let i = 0; i < CONFIG.totalCells; i++) {
+                if (!gameState.scratchedCells.has(i)) {
+                    const row = Math.floor(i / CONFIG.gridCols);
+                    const col = i % CONFIG.gridCols;
+                    
+                    const cellRect = {
+                        x: col * cellWidth,
+                        y: row * cellHeight,
+                        width: cellWidth,
+                        height: cellHeight
+                    };
+                    
+                    const scratchedArea = calculateScratchedArea(cellRect);
+                    if (scratchedArea >= CONFIG.revealThreshold) {
+                        revealCell(i);
+                    }
+                }
+            }
+        }
+
+        function startNewGame() {
+            generateCells();
+            renderGrid();
+            initCanvas();
+        }
+
+        function resetGame() {
+            if (playerData.chances > 0) {
+                if (useChance()) {
+                    startNewGame();
+                }
+            } else if (playerData.balance >= CONFIG.exchangeRate) {
+                document.getElementById('exchangeDisplay').textContent = `消耗${CONFIG.exchangeRate}元 = 1次`;
+                document.getElementById('exchangeTip').textContent = `当前余额${playerData.balance}元，可兑换${Math.floor(playerData.balance / CONFIG.exchangeRate)}次`;
+                document.getElementById('exchangeModal').classList.add('active');
+            } else {
+                document.getElementById('noChanceDisplay').textContent = `余额${playerData.balance}元，不足${CONFIG.exchangeRate}元`;
+                document.getElementById('noChanceModal').classList.add('active');
+            }
+        }
+
+        function exchangeChances() {
+            if (playerData.balance >= CONFIG.exchangeRate) {
+                playerData.balance -= CONFIG.exchangeRate;
+                playerData.chances += 1;
+                savePlayerData();
+                updateDisplay();
+                closeExchangeModal();
+                if (useChance()) {
+                    startNewGame();
+                }
+            }
+        }
+
+        function showRules() {
+            document.getElementById('rulesModal').classList.add('active');
+        }
+
+        function closeRules() {
+            document.getElementById('rulesModal').classList.remove('active');
+        }
+
+        function closeModal(event) {
+            if (event.target.id === 'rulesModal') {
+                closeRules();
+            }
+        }
+
+        function closeExchangeModal(event) {
+            if (!event || event.target.id === 'exchangeModal') {
+                document.getElementById('exchangeModal').classList.remove('active');
+            }
+        }
+
+        function closeNoChanceModal(event) {
+            if (!event || event.target.id === 'noChanceModal') {
+                document.getElementById('noChanceModal').classList.remove('active');
+            }
+        }
+
+        function closeGameOverModal(event) {
+            if (!event || event.target.id === 'gameOverModal') {
+                document.getElementById('gameOverModal').classList.remove('active');
+            }
+        }
+
+        function init() {
+            loadPlayerData();
+            generateCells();
+            renderGrid();
+            
+            setTimeout(() => {
+                initCanvas();
+            }, 100);
+            
+            scratchCanvas.addEventListener('mousedown', handleStart);
+            scratchCanvas.addEventListener('mousemove', handleMove);
+            scratchCanvas.addEventListener('mouseup', handleEnd);
+            scratchCanvas.addEventListener('mouseleave', handleEnd);
+            
+            scratchCanvas.addEventListener('touchstart', handleStart, { passive: false });
+            scratchCanvas.addEventListener('touchmove', handleMove, { passive: false });
+            scratchCanvas.addEventListener('touchend', handleEnd, { passive: false });
+            scratchCanvas.addEventListener('touchcancel', handleEnd, { passive: false });
+            
+            resetBtn.addEventListener('click', resetGame);
+            document.getElementById('exchangeBtn').addEventListener('click', exchangeChances);
+            
+            let titleTimer = null;
+            const titleEl = document.getElementById('titleEl');
+            titleEl.addEventListener('mousedown', () => {
+                titleTimer = setTimeout(() => {
+                    if (confirm('确定要重置所有数据吗？')) {
+                        localStorage.removeItem('shouqiwang_player_data');
+                        location.reload();
+                    }
+                }, 2000);
+            });
+            titleEl.addEventListener('mouseup', () => clearTimeout(titleTimer));
+            titleEl.addEventListener('mouseleave', () => clearTimeout(titleTimer));
+            titleEl.addEventListener('touchstart', () => {
+                titleTimer = setTimeout(() => {
+                    if (confirm('确定要重置所有数据吗？')) {
+                        localStorage.removeItem('shouqiwang_player_data');
+                        location.reload();
+                    }
+                }, 2000);
+            });
+            titleEl.addEventListener('touchend', () => clearTimeout(titleTimer));
+            
+            window.addEventListener('resize', () => {
+                setTimeout(initCanvas, 100);
+            });
+        }
+
+        window.clearAllData = function() {
+            localStorage.removeItem('shouqiwang_player_data');
+            playerData = { balance: 0, chances: CONFIG.initialChances, isNewPlayer: true };
+            generateCells();
+            renderGrid();
+            initCanvas();
+            updateDisplay();
+            alert('数据已重置！余额: 0元, 次数: ' + CONFIG.initialChances + '次');
+        };
+
+        init();
+    </script>
+</body>
+</html>
