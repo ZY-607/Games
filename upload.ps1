@@ -19,7 +19,7 @@ $ErrorActionPreference = "Stop"
 
 Write-Host ""
 Write-Host "========================================" -ForegroundColor Cyan
-Write-Host "  武侠幸存者 - 一键上传脚本 v1.1" -ForegroundColor Yellow
+Write-Host "  武侠幸存者 - 一键上传脚本 v1.2" -ForegroundColor Yellow
 Write-Host "========================================" -ForegroundColor Cyan
 Write-Host ""
 
