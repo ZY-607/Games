@@ -41,6 +41,6 @@ backup_*/
 *.rar
 *.7z
 
-# Trae/Minimax配置（可选，如需上传则移除）
-# .trae/
-# .minimax/
+# Trae/Minimax工具配置（不上传）
+.trae/
+.minimax/
